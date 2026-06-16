@@ -4,6 +4,6 @@
 # Released under the MIT License.
 # Copyright, 2026, by Samuel Williams.
 
-require_relative "../lib/completion/command/top"
+require_relative "../lib/completion/command"
 
 Completion::Command.call
