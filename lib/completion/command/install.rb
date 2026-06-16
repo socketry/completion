@@ -12,7 +12,7 @@ require_relative "../shell/fish"
 require_relative "../shell/zsh"
 
 module Completion
-	class Command
+	module Command
 		# Install a shell completion adapter script to a user-local completion directory.
 		class Install < Samovar::Command
 			self.description = "Install a shell completion adapter script."

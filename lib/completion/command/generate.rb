@@ -11,7 +11,7 @@ require_relative "../shell/fish"
 require_relative "../shell/zsh"
 
 module Completion
-	class Command
+	module Command
 		# Generate shell completion adapter scripts.
 		class Generate < Samovar::Command
 			self.description = "Generate shell completion adapter scripts."

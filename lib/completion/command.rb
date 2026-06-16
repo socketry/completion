@@ -7,8 +7,11 @@ require "samovar"
 require "samovar/failure"
 
 module Completion
-	# The completion command-line interface.
-	class Command < Samovar::Command
+	module Command
+		def self.call(...)
+			Top.call(...)
+		end
+		
 		def self.shell_name(path)
 			File.basename(path.to_s)
 		end
@@ -43,9 +46,6 @@ module Completion
 			end
 		end
 		
-		def call
-			@command.call
-		end
 	end
 end
 
@@ -53,16 +53,23 @@ require_relative "command/generate"
 require_relative "command/install"
 
 module Completion
-	class Command
-		self.description = "Install and generate shell completion adapter scripts."
-		
-		options do
-			option "-h/--help", "Print out help information."
+	module Command
+		# The completion command-line interface.
+		class Top < Samovar::Command
+			self.description = "Install and generate shell completion adapter scripts."
+			
+			options do
+				option "-h/--help", "Print out help information."
+			end
+			
+			nested :command, {
+				"install" => Install,
+				"generate" => Generate,
+			}, default: "generate"
+			
+			def call
+				@command.call
+			end
 		end
-		
-		nested :command, {
-			"install" => Install,
-			"generate" => Generate,
-		}, default: "generate"
 	end
 end

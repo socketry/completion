@@ -6,7 +6,7 @@
 require "completion/command"
 require "sus/fixtures/temporary_directory_context"
 
-describe Completion::Command do
+describe Completion::Command::Top do
 	include Sus::Fixtures::TemporaryDirectoryContext
 	
 	it "generates a shell completion adapter script" do
@@ -88,13 +88,13 @@ describe Completion::Command do
 	it "can be invoked through the top-level command" do
 		output = StringIO.new
 		
-		Completion::Command.new(["--shell", "bash", "--command", "my-command"], output: output).call
+		Completion::Command::Top.new(["--shell", "bash", "--command", "my-command"], output: output).call
 		
 		expect(output.string).to be(:include?, "complete -F _my_command_completion my-command")
 	end
 	
 	it "completes shell names" do
-		result = Completion::Command.complete(["--shell", "z"], index: 1)
+		result = Completion::Command::Top.complete(["--shell", "z"], index: 1)
 		
 		expect(result.collect(&:value)).to be == ["zsh"]
 	end
@@ -105,7 +105,7 @@ describe Completion::Command do
 		begin
 			ENV["SHELL"] = "/bin/fish"
 			
-			result = Completion::Command.complete(["--shell"], index: 1)
+			result = Completion::Command::Top.complete(["--shell"], index: 1)
 		ensure
 			ENV["SHELL"] = shell
 		end
@@ -114,7 +114,7 @@ describe Completion::Command do
 	end
 	
 	it "completes install shell option values" do
-		result = Completion::Command.complete(["install", "--shell", "f"], index: 2)
+		result = Completion::Command::Top.complete(["install", "--shell", "f"], index: 2)
 		
 		expect(result.collect(&:value)).to be == ["fish"]
 	end
