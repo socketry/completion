@@ -11,10 +11,10 @@ describe Completion::Command::Top do
 	
 	it "shows top-level commands with help" do
 		output = StringIO.new
+		command = subject.new(["--help"], output: output)
 		
-		result = Completion::Command.call(["--help"], output: output)
+		command.call
 		
-		expect(result).to be == true
 		expect(output.string).to be(:include?, "install")
 		expect(output.string).to be(:include?, "generate")
 	end
@@ -30,8 +30,10 @@ describe Completion::Command::Top do
 	end
 	
 	it "requires the command name when generating" do
+		command = subject.new(["generate", "--shell", "zsh"])
+		
 		expect do
-			subject.new(["generate", "--shell", "zsh"])
+			command.call
 		end.to raise_exception(Samovar::MissingValueError)
 	end
 	

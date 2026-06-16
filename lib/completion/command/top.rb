@@ -28,7 +28,11 @@ module Completion
 			}, default: "generate"
 			
 			def call
-				@command.call
+				if @options[:help]
+					self.print_usage
+				else
+					@command.call
+				end
 			end
 		end
 	end

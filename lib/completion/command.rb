@@ -5,13 +5,8 @@
 
 module Completion
 	module Command
-		def self.call(input = ARGV, output: $stderr, **options)
-			if input.first == "--help" || input.first == "-h"
-				Top.new(nil, output: output).print_usage(output: output)
-				return true
-			end
-			
-			Top.call(input, output: output, **options)
+		def self.call(...)
+			Top.call(...)
 		end
 	end
 end
