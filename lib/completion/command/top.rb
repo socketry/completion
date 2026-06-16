@@ -5,7 +5,7 @@
 
 require "samovar"
 
-unless defined?(Completion::Command)
+unless defined?(Completion::Command) && Completion::Command.respond_to?(:call)
 	require_relative "../command"
 end
 

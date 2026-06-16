@@ -9,6 +9,16 @@ require "sus/fixtures/temporary_directory_context"
 describe Completion::Command::Top do
 	include Sus::Fixtures::TemporaryDirectoryContext
 	
+	it "shows top-level commands with help" do
+		output = StringIO.new
+		
+		result = Completion::Command.call(["--help"], output: output)
+		
+		expect(result).to be == true
+		expect(output.string).to be(:include?, "install")
+		expect(output.string).to be(:include?, "generate")
+	end
+	
 	it "generates a shell completion adapter script" do
 		output = StringIO.new
 		command = subject.new(["generate", "--shell", "zsh", "--command", "my-command"], output: output)

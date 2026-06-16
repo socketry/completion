@@ -3,12 +3,15 @@
 # Released under the MIT License.
 # Copyright, 2026, by Samuel Williams.
 
-require "samovar"
-
 module Completion
 	module Command
-		def self.call(...)
-			Top.call(...)
+		def self.call(input = ARGV, output: $stderr, **options)
+			if input.first == "--help" || input.first == "-h"
+				Top.new(nil, output: output).print_usage(output: output)
+				return true
+			end
+			
+			Top.call(input, output: output, **options)
 		end
 	end
 end
