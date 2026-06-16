@@ -5,6 +5,40 @@
 
 module Completion
 	module Shell
+		def self.shell_name(path)
+			File.basename(path.to_s)
+		end
+		
+		def self.default_shell
+			shell_name(ENV["SHELL"])
+		end
+		
+		def self.default_directory(shell)
+			case shell
+			when "bash"
+				File.expand_path("~/.local/share/bash-completion/completions")
+			when "fish"
+				File.expand_path("~/.config/fish/completions")
+			when "zsh"
+				File.expand_path("~/.zsh/completions")
+			else
+				raise ArgumentError, "Unsupported shell: #{shell.inspect}"
+			end
+		end
+		
+		def self.file_name(shell, executable)
+			case shell
+			when "bash"
+				executable
+			when "fish"
+				"#{executable}.fish"
+			when "zsh"
+				"_#{executable}"
+			else
+				raise ArgumentError, "Unsupported shell: #{shell.inspect}"
+			end
+		end
+		
 		def self.script(shell:, executable:)
 			case shell.to_sym
 			when :bash

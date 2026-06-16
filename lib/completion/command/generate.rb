@@ -17,7 +17,7 @@ module Completion
 			self.description = "Generate shell completion adapter scripts."
 			
 			options do
-				option "--shell <name>", "The shell to generate completions for.", default: Command.method(:default_shell), completions: ["bash", "zsh", "fish"]
+				option "--shell <name>", "The shell to generate completions for.", default: Shell.method(:default_shell), completions: ["bash", "zsh", "fish"]
 				option "--command <name>", "The command executable to complete.", required: true
 			end
 			

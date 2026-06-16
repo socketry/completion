@@ -5,7 +5,7 @@
 
 require "samovar"
 
-unless defined?(Completion::Command) && Completion::Command.respond_to?(:default_shell)
+unless defined?(Completion::Command)
 	require_relative "../command"
 end
 

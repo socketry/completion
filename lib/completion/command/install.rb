@@ -18,15 +18,15 @@ module Completion
 			self.description = "Install a shell completion adapter script."
 			
 			options do
-				option "--shell <name>", "The shell to install completions for.", default: Command.method(:default_shell), completions: ["bash", "zsh", "fish"]
+				option "--shell <name>", "The shell to install completions for.", default: Shell.method(:default_shell), completions: ["bash", "zsh", "fish"]
 				option "--directory <path>", "The completion directory to install into."
 				option "--command <name>", "The command executable to complete.", required: true
 			end
 			
 			def call
 				shell = @options[:shell]
-				directory = @options[:directory] || Command.default_directory(shell)
-				path = File.join(directory, Command.file_name(shell, @options[:command]))
+				directory = @options[:directory] || Shell.default_directory(shell)
+				path = File.join(directory, Shell.file_name(shell, @options[:command]))
 				script = Shell.script(shell: shell.to_sym, executable: @options[:command])
 				
 				FileUtils.mkdir_p(directory)
