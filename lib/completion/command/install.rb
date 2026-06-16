@@ -20,16 +20,17 @@ module Completion
 			options do
 				option "--shell <name>", "The shell to install completions for.", default: Shell.method(:default_shell), completions: ["bash", "zsh", "fish"]
 				option "--directory <path>", "The completion directory to install into."
-				option "--command <name>", "The command executable to complete."
 			end
 			
+			one :command, "The command executable to complete."
+			
 			def call
-				raise Samovar::MissingValueError.new(self, :command) unless @options[:command]
+				raise Samovar::MissingValueError.new(self, :command) unless @command
 				
 				shell = @options[:shell]
 				directory = @options[:directory] || Shell.default_directory(shell)
-				path = File.join(directory, Shell.file_name(shell, @options[:command]))
-				script = Shell.script(shell: shell.to_sym, executable: @options[:command])
+				path = File.join(directory, Shell.file_name(shell, @command))
+				script = Shell.script(shell: shell.to_sym, executable: @command)
 				
 				FileUtils.mkdir_p(directory)
 				File.write(path, script)

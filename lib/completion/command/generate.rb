@@ -18,13 +18,14 @@ module Completion
 			
 			options do
 				option "--shell <name>", "The shell to generate completions for.", default: Shell.method(:default_shell), completions: ["bash", "zsh", "fish"]
-				option "--command <name>", "The command executable to complete."
 			end
 			
+			one :command, "The command executable to complete."
+			
 			def call
-				raise Samovar::MissingValueError.new(self, :command) unless @options[:command]
+				raise Samovar::MissingValueError.new(self, :command) unless @command
 				
-				output.puts Shell.script(shell: @options[:shell].to_sym, executable: @options[:command])
+				output.puts Shell.script(shell: @options[:shell].to_sym, executable: @command)
 			end
 		end
 	end

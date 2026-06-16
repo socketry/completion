@@ -21,7 +21,7 @@ describe Completion::Command::Top do
 	
 	it "generates a shell completion adapter script" do
 		output = StringIO.new
-		command = subject.new(["generate", "--shell", "zsh", "--command", "my-command"], output: output)
+		command = subject.new(["generate", "--shell", "zsh", "my-command"], output: output)
 		
 		command.call
 		
@@ -37,9 +37,9 @@ describe Completion::Command::Top do
 		end.to raise_exception(Samovar::MissingValueError)
 	end
 	
-	it "generates a shell completion adapter script with --command" do
+	it "generates a shell completion adapter script with positional command" do
 		output = StringIO.new
-		command = subject.new(["--shell", "zsh", "--command", "my-command"], output: output)
+		command = subject.new(["--shell", "zsh", "my-command"], output: output)
 		
 		command.call
 		
@@ -54,7 +54,7 @@ describe Completion::Command::Top do
 		begin
 			ENV["SHELL"] = "/bin/fish"
 			
-			command = subject.new(["--command", "my-command"], output: output)
+			command = subject.new(["my-command"], output: output)
 			command.call
 		ensure
 			ENV["SHELL"] = shell
@@ -66,7 +66,7 @@ describe Completion::Command::Top do
 	it "installs a shell completion adapter script to an explicit directory" do
 		output = StringIO.new
 		directory = File.join(root, "zsh")
-		command = subject.new(["install", "--shell", "zsh", "--directory", directory, "--command", "my-command"], output: output)
+		command = subject.new(["install", "--shell", "zsh", "--directory", directory, "my-command"], output: output)
 		
 		command.call
 		
@@ -85,7 +85,7 @@ describe Completion::Command::Top do
 			ENV["SHELL"] = "/bin/fish"
 			ENV["HOME"] = File.join(root, "home")
 			
-			command = subject.new(["install", "--command", "my-command"], output: output)
+			command = subject.new(["install", "my-command"], output: output)
 			command.call
 		ensure
 			ENV["SHELL"] = shell
@@ -100,7 +100,7 @@ describe Completion::Command::Top do
 	it "can be invoked through the top-level command" do
 		output = StringIO.new
 		
-		Completion::Command::Top.new(["--shell", "bash", "--command", "my-command"], output: output).call
+		Completion::Command::Top.new(["--shell", "bash", "my-command"], output: output).call
 		
 		expect(output.string).to be(:include?, "complete -F _my_command_completion my-command")
 	end

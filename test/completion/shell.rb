@@ -119,7 +119,7 @@ describe Completion::Shell do
 			words=(#{executable} completion --shell z)
 			CURRENT=4
 			
-			source <(ruby -Ilib bin/completion --command samovar --shell zsh)
+			source <(ruby -Ilib bin/completion --shell zsh samovar)
 		SCRIPT
 		
 		expect(File.read(path)).to be == "2|completion --shell z\n"
@@ -142,7 +142,7 @@ describe Completion::Shell do
 		
 		system({"TRACE" => path}, "fish", "--no-config", "-c", <<~SCRIPT)
 			complete -e -c samovar
-			source (ruby -Ilib bin/completion --command samovar --shell fish | psub)
+			source (ruby -Ilib bin/completion --shell fish samovar | psub)
 			set PATH #{root}
 			complete --do-complete "#{executable} completion --shell z" >/dev/null
 		SCRIPT
@@ -168,7 +168,7 @@ describe Completion::Shell do
 		system({"TRACE" => path}, "fish", "--no-config", "-c", <<~SCRIPT)
 			cd #{root}
 			complete -e -c samovar
-			source (ruby -I#{Dir.pwd}/lib #{Dir.pwd}/bin/completion --command samovar --shell fish | psub)
+			source (ruby -I#{Dir.pwd}/lib #{Dir.pwd}/bin/completion --shell fish samovar | psub)
 			set PATH #{root}
 			complete --do-complete "bin/samovar completion --shell z" >/dev/null
 		SCRIPT
@@ -193,7 +193,7 @@ describe Completion::Shell do
 		
 		system({"TRACE" => path}, "fish", "--no-config", "-c", <<~SCRIPT)
 			complete -e -c samovar
-			source (ruby -Ilib bin/completion --command samovar --shell fish | psub)
+			source (ruby -Ilib bin/completion --shell fish samovar | psub)
 			set PATH #{root}
 			complete --do-complete "#{executable} " >/dev/null
 		SCRIPT
