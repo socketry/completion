@@ -26,7 +26,7 @@ describe Completion::Command::Top do
 		command.call
 		
 		expect(output.string).to be(:include?, "#compdef my-command")
-		expect(output.string).to be(:include?, "COMPLETION_INDEX")
+		expect(output.string).to be(:include?, "completion-my-command")
 	end
 	
 	it "requires the command name when generating" do
@@ -44,7 +44,7 @@ describe Completion::Command::Top do
 		command.call
 		
 		expect(output.string).to be(:include?, "#compdef my-command")
-		expect(output.string).to be(:include?, "COMPLETION_INDEX")
+		expect(output.string).to be(:include?, "completion-my-command")
 	end
 	
 	it "infers shell when generating" do
@@ -73,7 +73,7 @@ describe Completion::Command::Top do
 		path = File.join(directory, "_my-command")
 		expect(output.string).to be == "#{path}\n"
 		expect(File.read(path)).to be(:include?, "#compdef my-command")
-		expect(File.read(path)).to be(:include?, "COMPLETION_INDEX")
+		expect(File.read(path)).to be(:include?, "completion-my-command")
 	end
 	
 	it "infers shell and default directory when installing" do
@@ -103,6 +103,20 @@ describe Completion::Command::Top do
 		Completion::Command::Top.new(["--shell", "bash", "my-command"], output: output).call
 		
 		expect(output.string).to be(:include?, "complete -F _my_command_completion my-command")
+	end
+	
+	it "can complete through the top-level command" do
+		output = StringIO.new
+		
+		Completion::Command.call(["ins"], completion: true, completion_output: output)
+		
+		expect(output.string).to be == "install\tInstall a shell completion adapter script.\tcommand\n"
+	end
+	
+	it "can complete through the dedicated executable" do
+		output = IO.popen(["ruby", "-Ilib", "bin/completion-completion", "ins"], &:read)
+		
+		expect(output).to be == "install\tInstall a shell completion adapter script.\tcommand\n"
 	end
 	
 	it "completes shell names" do

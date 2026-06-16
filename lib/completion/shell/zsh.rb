@@ -15,17 +15,16 @@ module Completion
 					#compdef #{command}
 
 					#{function}() {
-						local index=$((CURRENT - 2))
-						local command="${words[1]}"
+						local command="completion-#{command}"
 						local -a argv
-						argv=("${(@)words[2,-1]}")
+						argv=("${(@)words[2,CURRENT]}")
 
 						local -a completions
 						while IFS=$'\\t' read -r value description type; do
 							completions+=("${value}:${description}")
-						done < <(#{Protocol::Completion::Index::VARIABLE}="$index" "$command" "${argv[@]}")
+						done < <("$command" "${argv[@]}")
 
-						_describe '#{command}' completions
+						_describe '#{Shell.command_name(executable)}' completions
 					}
 
 					#{function}

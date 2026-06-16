@@ -13,14 +13,13 @@ module Completion
 				
 				<<~SCRIPT
 					#{function}() {
-						local index=$((COMP_CWORD - 1))
-						local command="${COMP_WORDS[0]}"
-						local argv=("${COMP_WORDS[@]:1}")
+						local command="completion-#{command}"
+						local argv=("${COMP_WORDS[@]:1:COMP_CWORD}")
 						COMPREPLY=()
 
 						while IFS=$'\\t' read -r value description type; do
 							COMPREPLY+=("$value")
-						done < <(#{Protocol::Completion::Index::VARIABLE}="$index" "$command" "${argv[@]}")
+						done < <("$command" "${argv[@]}")
 					}
 
 					complete -F #{function} #{command}

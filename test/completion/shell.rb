@@ -10,7 +10,7 @@ describe Completion::Shell do
 	include Sus::Fixtures::TemporaryDirectoryContext
 	
 	it "generates shell completion scripts" do
-		expect(subject.script(shell: :bash, executable: "samovar")).to be(:include?, "COMPLETION_INDEX")
+		expect(subject.script(shell: :bash, executable: "samovar")).to be(:include?, "completion-samovar")
 		expect(subject.script(shell: :zsh, executable: "samovar")).to be(:include?, "#compdef samovar")
 		expect(subject.script(shell: :fish, executable: "samovar")).to be(:include?, "complete -c samovar")
 	end
@@ -26,23 +26,23 @@ describe Completion::Shell do
 		expect(fish).to be(:include?, "complete -c samovar")
 	end
 	
-	it "uses the completed command word as the executable" do
+	it "uses the dedicated completion command as the executable" do
 		bash = subject.script(shell: :bash, executable: "samovar")
 		zsh = subject.script(shell: :zsh, executable: "samovar")
 		fish = subject.script(shell: :fish, executable: "samovar")
 		
-		expect(bash).to be(:include?, 'local command="${COMP_WORDS[0]}"')
-		expect(bash).to be(:include?, 'COMPLETION_INDEX="$index" "$command" "${argv[@]}"')
-		expect(zsh).to be(:include?, 'COMPLETION_INDEX="$index" "$command" "${argv[@]}"')
-		expect(fish).to be(:include?, "set -l command $argv[1]")
+		expect(bash).to be(:include?, 'local command="completion-samovar"')
+		expect(bash).to be(:include?, '"$command" "${argv[@]}"')
+		expect(zsh).to be(:include?, 'local command="completion-samovar"')
+		expect(zsh).to be(:include?, '"$command" "${argv[@]}"')
+		expect(fish).to be(:include?, "set -l command completion-samovar")
 		expect(fish).to be(:include?, "$command $argv")
 	end
 	
-	it "uses zsh array indexing to remove the command word" do
+	it "uses zsh array indexing to keep arguments up to the cursor" do
 		script = subject.script(shell: :zsh, executable: "samovar")
 		
-		expect(script).to be(:include?, 'local command="${words[1]}"')
-		expect(script).to be(:include?, 'argv=("${(@)words[2,-1]}")')
+		expect(script).to be(:include?, 'argv=("${(@)words[2,CURRENT]}")')
 	end
 	
 	it "passes application arguments from bash completion" do
@@ -51,16 +51,18 @@ describe Completion::Shell do
 		path = File.join(root, "bash-trace")
 		adapter = File.join(root, "samovar.bash")
 		executable = File.join(root, "samovar")
+		completer = File.join(root, "completion-samovar")
 		
 		File.write(adapter, subject.script(shell: :bash, executable: "samovar"))
-		File.write(executable, <<~SCRIPT)
+		File.write(completer, <<~SCRIPT)
 			#!/bin/sh
-			printf "%s|%s\\n" "$COMPLETION_INDEX" "$*" > "$TRACE"
+			printf "%s\\n" "$*" > "$TRACE"
 			printf "completion\\tGenerate\\tcommand\\n"
 		SCRIPT
-		File.chmod(0o755, executable)
+		File.chmod(0o755, completer)
 		
 		system({"TRACE" => path, "ADAPTER" => adapter}, "bash", "-c", <<~SCRIPT)
+			PATH="#{root}:$PATH"
 			source "$ADAPTER"
 			
 			COMP_WORDS=(#{executable} completion --shell z)
@@ -69,7 +71,7 @@ describe Completion::Shell do
 			_samovar_completion
 		SCRIPT
 		
-		expect(File.read(path)).to be == "2|completion --shell z\n"
+		expect(File.read(path)).to be == "completion --shell z\n"
 	end
 	
 	it "passes an empty token from bash completion" do
@@ -78,16 +80,18 @@ describe Completion::Shell do
 		path = File.join(root, "bash-empty-trace")
 		adapter = File.join(root, "samovar-empty.bash")
 		executable = File.join(root, "samovar-empty")
+		completer = File.join(root, "completion-samovar")
 		
 		File.write(adapter, subject.script(shell: :bash, executable: "samovar"))
-		File.write(executable, <<~SCRIPT)
+		File.write(completer, <<~SCRIPT)
 			#!/bin/sh
-			printf "%s|%s\\n" "$COMPLETION_INDEX" "$*" > "$TRACE"
+			printf "%s\\n" "$*" > "$TRACE"
 			printf "completion\\tGenerate\\tcommand\\n"
 		SCRIPT
-		File.chmod(0o755, executable)
+		File.chmod(0o755, completer)
 		
 		system({"TRACE" => path, "ADAPTER" => adapter}, "bash", "-c", <<~SCRIPT)
+			PATH="#{root}:$PATH"
 			source "$ADAPTER"
 			
 			COMP_WORDS=(#{executable} "")
@@ -96,7 +100,7 @@ describe Completion::Shell do
 			_samovar_completion
 		SCRIPT
 		
-		expect(File.read(path)).to be == "0|\n"
+		expect(File.read(path)).to be == "\n"
 	end
 	
 	it "passes application arguments from zsh completion" do
@@ -104,15 +108,17 @@ describe Completion::Shell do
 		
 		path = File.join(root, "trace")
 		executable = File.join(root, "samovar")
+		completer = File.join(root, "completion-samovar")
 		
-		File.write(executable, <<~SCRIPT)
+		File.write(completer, <<~SCRIPT)
 			#!/bin/sh
-			printf "%s|%s\\n" "$COMPLETION_INDEX" "$*" > "$TRACE"
+			printf "%s\\n" "$*" > "$TRACE"
 			printf "completion\\tGenerate\\tcommand\\n"
 		SCRIPT
-		File.chmod(0o755, executable)
+		File.chmod(0o755, completer)
 		
 		system({"TRACE" => path}, "zsh", "-fc", <<~SCRIPT)
+			PATH="#{root}:$PATH"
 			
 			_describe() { :; }
 			
@@ -122,7 +128,7 @@ describe Completion::Shell do
 			source <(ruby -Ilib bin/completion --shell zsh samovar)
 		SCRIPT
 		
-		expect(File.read(path)).to be == "2|completion --shell z\n"
+		expect(File.read(path)).to be == "completion --shell z\n"
 	end
 	
 	it "passes application arguments from fish completion" do
@@ -131,23 +137,24 @@ describe Completion::Shell do
 		path = File.join(root, "fish-trace")
 		directory = File.join(root, "fish-command")
 		executable = File.join(directory, "samovar")
+		completer = File.join(root, "completion-samovar")
 		
 		Dir.mkdir(directory)
-		File.write(executable, <<~SCRIPT)
+		File.write(completer, <<~SCRIPT)
 			#!/bin/sh
-			printf "%s|%s\\n" "$COMPLETION_INDEX" "$*" >> "$TRACE"
+			printf "%s\\n" "$*" >> "$TRACE"
 			printf "completion\\tGenerate\\tcommand\\n"
 		SCRIPT
-		File.chmod(0o755, executable)
+		File.chmod(0o755, completer)
 		
 		system({"TRACE" => path}, "fish", "--no-config", "-c", <<~SCRIPT)
 			complete -e -c samovar
 			source (ruby -Ilib bin/completion --shell fish samovar | psub)
-			set PATH #{root}
+			set PATH #{root} $PATH
 			complete --do-complete "#{executable} completion --shell z" >/dev/null
 		SCRIPT
 		
-		expect(File.readlines(path)).to be(:include?, "2|completion --shell z\n")
+		expect(File.readlines(path)).to be(:include?, "completion --shell z\n")
 	end
 	
 	it "passes application arguments from fish completion using a relative executable path" do
@@ -156,24 +163,25 @@ describe Completion::Shell do
 		path = File.join(root, "fish-relative-trace")
 		directory = File.join(root, "bin")
 		executable = File.join(directory, "samovar")
+		completer = File.join(root, "completion-samovar")
 		
 		Dir.mkdir(directory)
-		File.write(executable, <<~SCRIPT)
+		File.write(completer, <<~SCRIPT)
 			#!/bin/sh
-			printf "%s|%s\\n" "$COMPLETION_INDEX" "$*" >> "$TRACE"
+			printf "%s\\n" "$*" >> "$TRACE"
 			printf "completion\\tGenerate\\tcommand\\n"
 		SCRIPT
-		File.chmod(0o755, executable)
+		File.chmod(0o755, completer)
 		
 		system({"TRACE" => path}, "fish", "--no-config", "-c", <<~SCRIPT)
 			cd #{root}
 			complete -e -c samovar
 			source (ruby -I#{Dir.pwd}/lib #{Dir.pwd}/bin/completion --shell fish samovar | psub)
-			set PATH #{root}
+			set PATH #{root} $PATH
 			complete --do-complete "bin/samovar completion --shell z" >/dev/null
 		SCRIPT
 		
-		expect(File.readlines(path)).to be(:include?, "2|completion --shell z\n")
+		expect(File.readlines(path)).to be(:include?, "completion --shell z\n")
 	end
 	
 	it "passes an empty token from fish completion" do
@@ -182,23 +190,24 @@ describe Completion::Shell do
 		path = File.join(root, "fish-empty-trace")
 		directory = File.join(root, "fish-empty-command")
 		executable = File.join(directory, "samovar")
+		completer = File.join(root, "completion-samovar")
 		
 		Dir.mkdir(directory)
-		File.write(executable, <<~SCRIPT)
+		File.write(completer, <<~SCRIPT)
 			#!/bin/sh
-			printf "%s|%s\\n" "$COMPLETION_INDEX" "$*" >> "$TRACE"
+			printf "%s\\n" "$*" >> "$TRACE"
 			printf "completion\\tGenerate\\tcommand\\n"
 		SCRIPT
-		File.chmod(0o755, executable)
+		File.chmod(0o755, completer)
 		
 		system({"TRACE" => path}, "fish", "--no-config", "-c", <<~SCRIPT)
 			complete -e -c samovar
 			source (ruby -Ilib bin/completion --shell fish samovar | psub)
-			set PATH #{root}
+			set PATH #{root} $PATH
 			complete --do-complete "#{executable} " >/dev/null
 		SCRIPT
 		
-		expect(File.readlines(path)).to be(:include?, "0|\n")
+		expect(File.readlines(path)).to be(:include?, "\n")
 	end
 	
 	it "prints candidates as TSV" do

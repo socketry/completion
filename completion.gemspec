@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
 		"source_code_uri" => "https://github.com/socketry/completion.git",
 	}
 	
-	spec.executables = ["completion"]
+	spec.executables = ["completion", "completion-completion"]
 	spec.files = Dir["{bin,context,lib}/**/*", "*.md", base: __dir__]
 	spec.require_paths = ["lib"]
 	

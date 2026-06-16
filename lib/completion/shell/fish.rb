@@ -14,22 +14,17 @@ module Completion
 				<<~SCRIPT
 					function #{function} --description 'Complete #{command}'
 						set -l argv (commandline -opc)
-						set -l command $argv[1]
+						set -l command completion-#{command}
 						set -e argv[1]
 						set -l current (commandline -ct)
-						set -l index
 						
 						if test -n "$current"
 							set -a argv $current
-							set index (math (count $argv) - 1)
 						else
-							set index (count $argv)
+							set -a argv ""
 						end
 
-						begin
-							set -lx #{Protocol::Completion::Index::VARIABLE} "$index"
-							$command $argv
-						end | while read -l line
+						$command $argv | while read -l line
 							echo $line
 						end
 					end
