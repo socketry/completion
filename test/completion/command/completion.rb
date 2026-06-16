@@ -3,7 +3,7 @@
 # Released under the MIT License.
 # Copyright, 2026, by Samuel Williams.
 
-require "completion/command"
+require "completion/command/top"
 require "sus/fixtures/temporary_directory_context"
 
 describe Completion::Command::Top do
