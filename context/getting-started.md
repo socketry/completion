@@ -82,6 +82,34 @@ You can specify the shell and adapter directory explicitly:
 $ completion install --shell zsh --directory ~/.zsh/completions --command falcon
 ~~~
 
+## Uninstalling an Adapter
+
+Uninstall the generic adapter for the current shell:
+
+~~~ bash
+$ completion uninstall
+~~~
+
+Uninstall an adapter for a specific command:
+
+~~~ bash
+$ completion uninstall --command falcon
+~~~
+
+You can specify the shell and adapter directory explicitly:
+
+~~~ bash
+$ completion uninstall --shell zsh --directory ~/.zsh/completions --command falcon
+~~~
+
+Remove all managed adapters and helpers for the current shell:
+
+~~~ bash
+$ completion uninstall --all
+~~~
+
+`uninstall --all` only removes files generated with the completion metadata marker.
+
 ## Installed Files
 
 Installation writes a small adapter script and shared shell helpers.
@@ -107,6 +135,12 @@ Fish command adapters are installed into:
 
 ~~~ text
 ~/.config/fish/completions
+~~~
+
+Fish generic adapters are installed into:
+
+~~~ text
+~/.config/fish/conf.d
 ~~~
 
 ## Generating an Adapter

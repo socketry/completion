@@ -20,9 +20,14 @@ Please see the [project documentation](https://socketry.github.io/completion/) f
 
 Please see the [project releases](https://socketry.github.io/completion/releases/index) for all releases.
 
+### v0.0.2
+
+  - Add `completion uninstall` for removing installed shell adapter scripts.
+  - Add managed metadata markers to generated shell scripts and support `completion uninstall --all`.
+
 ### v0.0.1
 
-  - Initial release.
+  - Fix generic Fish completion installation by loading the adapter at shell startup and resolving completion executables from `PATH`.
 
 ## See Also
 
