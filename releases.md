@@ -3,6 +3,7 @@
 ## Unreleased
 
   - Add `completion uninstall` for removing installed shell adapter scripts.
+  - Add managed metadata markers to generated shell scripts and support `completion uninstall --all`.
 
 ## v0.0.1
 

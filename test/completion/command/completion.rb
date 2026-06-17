@@ -194,6 +194,69 @@ describe Completion::Command::Top do
 		expect(File.exist?(path)).to be == false
 	end
 	
+	it "uninstalls all managed fish completion scripts" do
+		output = StringIO.new
+		home = ENV["HOME"]
+		
+		begin
+			ENV["HOME"] = File.join(root, "home")
+			
+			fish_directory = File.join(ENV["HOME"], ".config", "fish")
+			completion_directory = File.join(fish_directory, "completions")
+			configuration_directory = File.join(fish_directory, "conf.d")
+			function_directory = File.join(fish_directory, "functions")
+			
+			managed_adapter = File.join(completion_directory, "my-command.fish")
+			managed_configuration = File.join(configuration_directory, "completion.fish")
+			managed_function = File.join(function_directory, "__completion_complete.fish")
+			unmanaged_adapter = File.join(completion_directory, "other-command.fish")
+			
+			FileUtils.mkdir_p(completion_directory)
+			FileUtils.mkdir_p(configuration_directory)
+			FileUtils.mkdir_p(function_directory)
+			
+			File.write(managed_adapter, Completion::Shell.script(shell: "fish", executable: "my-command"))
+			File.write(managed_configuration, Completion::Shell.script(shell: "fish"))
+			File.write(managed_function, Completion::Shell::Fish.complete_function)
+			File.write(unmanaged_adapter, "complete -c other-command -a custom\n")
+			
+			command = subject.new(["uninstall", "--shell", "fish", "--all"], output: output)
+			command.call
+		ensure
+			ENV["HOME"] = home
+		end
+		
+		expect(output.string).to be(:include?, "#{managed_adapter}\n")
+		expect(output.string).to be(:include?, "#{managed_configuration}\n")
+		expect(output.string).to be(:include?, "#{managed_function}\n")
+		expect(File.exist?(managed_adapter)).to be == false
+		expect(File.exist?(managed_configuration)).to be == false
+		expect(File.exist?(managed_function)).to be == false
+		expect(File.exist?(unmanaged_adapter)).to be == true
+	end
+	
+	it "uninstalls all managed completion scripts from an explicit directory" do
+		output = StringIO.new
+		directory = File.join(root, "zsh")
+		managed_adapter = File.join(directory, "_my-command")
+		managed_helper = File.join(directory, "completion.zsh")
+		unmanaged_adapter = File.join(directory, "_other-command")
+		
+		FileUtils.mkdir_p(directory)
+		File.write(managed_adapter, Completion::Shell.script(shell: "zsh", executable: "my-command"))
+		File.write(managed_helper, Completion::Shell.shared_script(shell: "zsh"))
+		File.write(unmanaged_adapter, "#compdef other-command\n")
+		
+		command = subject.new(["uninstall", "--shell", "zsh", "--directory", directory, "--all"], output: output)
+		command.call
+		
+		expect(output.string).to be(:include?, "#{managed_adapter}\n")
+		expect(output.string).to be(:include?, "#{managed_helper}\n")
+		expect(File.exist?(managed_adapter)).to be == false
+		expect(File.exist?(managed_helper)).to be == false
+		expect(File.exist?(unmanaged_adapter)).to be == true
+	end
+	
 	it "can be invoked through the top-level command" do
 		output = StringIO.new
 		

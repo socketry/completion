@@ -15,12 +15,12 @@ module Completion
 				command = Shell.command_name(executable)
 				
 				if executable
-					return <<~SCRIPT
+					return Shell.annotate(<<~SCRIPT, kind: "adapter", shell: "fish", executable: executable)
 						__completion_register #{command}
 					SCRIPT
 				end
 				
-				<<~SCRIPT
+				Shell.annotate(<<~SCRIPT, kind: "adapter", shell: "fish")
 					__completion_register_default
 				SCRIPT
 			end
@@ -42,7 +42,7 @@ module Completion
 			# 
 			# @returns [String] The generated Fish function script.
 			def self.complete_function
-				<<~SCRIPT
+				Shell.annotate(<<~SCRIPT, kind: "helper", shell: "fish")
 					function __completion_complete --description 'Complete commands with adjacent completion executables'
 						set -l argv (commandline -opc)
 						set -e argv[1]
@@ -95,7 +95,7 @@ module Completion
 			# 
 			# @returns [String] The generated Fish function script.
 			def self.register_function
-				<<~SCRIPT
+				Shell.annotate(<<~SCRIPT, kind: "helper", shell: "fish")
 					function __completion_register --description 'Register command completion'
 						complete -c $argv[1] -f -a "(__completion_complete)"
 					end
@@ -106,7 +106,7 @@ module Completion
 			# 
 			# @returns [String] The generated Fish function script.
 			def self.register_default_function
-				<<~SCRIPT
+				Shell.annotate(<<~SCRIPT, kind: "helper", shell: "fish")
 					function __completion_register_default --description 'Register generic completion'
 						complete -c "*" -n "__completion_supported" -f -a "(__completion_complete)"
 					end
@@ -117,7 +117,7 @@ module Completion
 			# 
 			# @returns [String] The generated Fish function script.
 			def self.resolve_function
-				<<~SCRIPT
+				Shell.annotate(<<~SCRIPT, kind: "helper", shell: "fish")
 					function __completion_resolve --description 'Resolve completion command'
 						set -l argv (commandline -opc)
 						set -l command $argv[1]
@@ -136,7 +136,7 @@ module Completion
 			# 
 			# @returns [String] The generated Fish function script.
 			def self.supported_function
-				<<~SCRIPT
+				Shell.annotate(<<~SCRIPT, kind: "helper", shell: "fish")
 					function __completion_supported --description 'Check completion support'
 						set -l completer (__completion_resolve)
 						

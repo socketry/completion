@@ -44,6 +44,54 @@ describe Completion::Shell do
 		expect(subject.script(shell: :fish, executable: "samovar")).to be(:include?, "__completion_register samovar")
 	end
 	
+	it "marks generated shell completion scripts as managed" do
+		bash = subject.script(shell: :bash, executable: "samovar")
+		fish = subject.script(shell: :fish, executable: "samovar")
+		zsh = subject.script(shell: :zsh, executable: "samovar")
+		
+		expect(bash.lines.first).to be == "# Auto-generated completion: {\"managed\":true,\"kind\":\"adapter\",\"shell\":\"bash\",\"command\":\"samovar\"}\n"
+		expect(fish.lines.first).to be == "# Auto-generated completion: {\"managed\":true,\"kind\":\"adapter\",\"shell\":\"fish\",\"command\":\"samovar\"}\n"
+		expect(zsh.lines.first).to be == "#compdef samovar\n"
+		expect(zsh.lines[1]).to be == "# Auto-generated completion: {\"managed\":true,\"kind\":\"adapter\",\"shell\":\"zsh\",\"command\":\"samovar\"}\n"
+	end
+	
+	it "marks shared shell helpers as managed" do
+		bash = subject.shared_script(shell: :bash)
+		fish = subject::Fish.complete_function
+		zsh = subject.shared_script(shell: :zsh)
+		
+		expect(bash.lines.first).to be == "# Auto-generated completion: {\"managed\":true,\"kind\":\"helper\",\"shell\":\"bash\"}\n"
+		expect(fish.lines.first).to be == "# Auto-generated completion: {\"managed\":true,\"kind\":\"helper\",\"shell\":\"fish\"}\n"
+		expect(zsh.lines.first).to be == "# Auto-generated completion: {\"managed\":true,\"kind\":\"helper\",\"shell\":\"zsh\"}\n"
+	end
+	
+	it "detects managed shell completion scripts" do
+		path = File.join(root, "managed")
+		File.write(path, <<~SCRIPT)
+			#compdef samovar
+			# Auto-generated completion: {"managed":true,"kind":"adapter","shell":"zsh","command":"samovar"}
+		SCRIPT
+		
+		expect(subject.managed?(path)).to be == true
+		expect(subject.metadata(path)).to be == {
+			"managed" => true,
+			"kind" => "adapter",
+			"shell" => "zsh",
+			"command" => "samovar",
+		}
+	end
+	
+	it "ignores unmanaged shell completion scripts" do
+		path = File.join(root, "unmanaged")
+		File.write(path, <<~SCRIPT)
+			#compdef samovar
+			# User-managed completion.
+		SCRIPT
+		
+		expect(subject.managed?(path)).to be == false
+		expect(subject.metadata(path)).to be == nil
+	end
+	
 	it "generates generic shell completion scripts" do
 		expect(subject.script(shell: :bash)).to be(:include?, "__completion_register_default")
 		expect(subject.script(shell: :zsh)).to be(:include?, "__completion_register_default")

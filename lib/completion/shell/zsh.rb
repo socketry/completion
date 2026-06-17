@@ -15,7 +15,7 @@ module Completion
 				command = Shell.command_name(executable)
 				
 				if executable
-					return <<~SCRIPT
+					return Shell.annotate_after_first_line(<<~SCRIPT, kind: "adapter", shell: "zsh", executable: executable)
 						#compdef #{command}
 						
 						local _completion_source="${(%):-%x}"
@@ -25,7 +25,7 @@ module Completion
 					SCRIPT
 				end
 				
-				<<~SCRIPT
+				Shell.annotate_after_first_line(<<~SCRIPT, kind: "adapter", shell: "zsh")
 					#compdef -default-
 					
 					local _completion_source="${(%):-%x}"
@@ -40,7 +40,7 @@ module Completion
 			# 
 			# @returns [String] The generated Zsh helper script.
 			def self.shared_script
-				<<~SCRIPT
+				Shell.annotate(<<~SCRIPT, kind: "helper", shell: "zsh")
 					__completion_resolve() {
 						local command="$1"
 						local basename="${command:t}"

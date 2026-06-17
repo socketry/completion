@@ -102,6 +102,14 @@ You can specify the shell and adapter directory explicitly:
 $ completion uninstall --shell zsh --directory ~/.zsh/completions --command falcon
 ~~~
 
+Remove all managed adapters and helpers for the current shell:
+
+~~~ bash
+$ completion uninstall --all
+~~~
+
+`uninstall --all` only removes files generated with the completion metadata marker.
+
 ## Installed Files
 
 Installation writes a small adapter script and shared shell helpers.

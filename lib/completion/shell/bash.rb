@@ -15,7 +15,7 @@ module Completion
 				command = Shell.command_name(executable)
 				
 				if executable
-					return <<~SCRIPT
+					return Shell.annotate(<<~SCRIPT, kind: "adapter", shell: "bash", executable: executable)
 						_completion_source="${BASH_SOURCE[0]}"
 						if [[ "$_completion_source" == */* ]]; then
 							_completion_directory="${_completion_source%/*}"
@@ -27,7 +27,7 @@ module Completion
 					SCRIPT
 				end
 				
-				<<~SCRIPT
+				Shell.annotate(<<~SCRIPT, kind: "adapter", shell: "bash")
 					_completion_source="${BASH_SOURCE[0]}"
 					if [[ "$_completion_source" == */* ]]; then
 						_completion_directory="${_completion_source%/*}"
@@ -43,7 +43,7 @@ module Completion
 			# 
 			# @returns [String] The generated Bash helper script.
 			def self.shared_script
-				<<~SCRIPT
+				Shell.annotate(<<~SCRIPT, kind: "helper", shell: "bash")
 					__completion_resolve() {
 						local command="$1"
 						local basename="${command##*/}"

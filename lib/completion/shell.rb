@@ -3,9 +3,90 @@
 # Released under the MIT License.
 # Copyright, 2026, by Samuel Williams.
 
+require "json"
+
 module Completion
 	# Shell adapter generation helpers.
 	module Shell
+		MARKER_PREFIX = "# Auto-generated completion: "
+		
+		# Generate a managed-file metadata marker.
+		# 
+		# @parameter kind [String] The generated file kind.
+		# @parameter shell [String | Symbol] The shell name.
+		# @parameter executable [String | Nil] The command executable, or nil for the generic adapter.
+		# @returns [String] The generated metadata marker.
+		def self.marker(kind:, shell:, executable: nil)
+			metadata = {
+				managed: true,
+				kind: kind,
+				shell: shell.to_s,
+			}
+			
+			if executable
+				metadata[:command] = command_name(executable)
+			end
+			
+			return "#{MARKER_PREFIX}#{JSON.generate(metadata)}"
+		end
+		
+		# Add a managed-file metadata marker to a generated script.
+		# 
+		# @parameter script [String] The generated script.
+		# @parameter kind [String] The generated file kind.
+		# @parameter shell [String | Symbol] The shell name.
+		# @parameter executable [String | Nil] The command executable, or nil for the generic adapter.
+		# @returns [String] The annotated script.
+		def self.annotate(script, kind:, shell:, executable: nil)
+			return "#{marker(kind: kind, shell: shell, executable: executable)}\n#{script}"
+		end
+		
+		# Add a managed-file metadata marker after the first line of a generated script.
+		# 
+		# @parameter script [String] The generated script.
+		# @parameter kind [String] The generated file kind.
+		# @parameter shell [String | Symbol] The shell name.
+		# @parameter executable [String | Nil] The command executable, or nil for the generic adapter.
+		# @returns [String] The annotated script.
+		def self.annotate_after_first_line(script, kind:, shell:, executable: nil)
+			first, rest = script.split("\n", 2)
+			
+			return "#{first}\n#{marker(kind: kind, shell: shell, executable: executable)}\n#{rest}"
+		end
+		
+		# Extract managed-file metadata from a generated script.
+		# 
+		# @parameter path [String] The script path to inspect.
+		# @returns [Hash | Nil] The parsed metadata, if present.
+		def self.metadata(path)
+			return nil unless File.file?(path)
+			
+			File.open(path) do |file|
+				2.times do
+					line = file.gets
+					break unless line
+					
+					if line.start_with?(MARKER_PREFIX)
+						return JSON.parse(line.delete_prefix(MARKER_PREFIX))
+					end
+				end
+			end
+			
+			return nil
+		rescue JSON::ParserError
+			return nil
+		end
+		
+		# Check whether a script is managed by completion.
+		# 
+		# @parameter path [String] The script path to inspect.
+		# @returns [Boolean] Whether the script is managed by completion.
+		def self.managed?(path)
+			metadata = self.metadata(path)
+			
+			return metadata && metadata["managed"] == true || false
+		end
+		
 		# Extract a shell name from a path.
 		# 
 		# @parameter path [String | Nil] The shell path.
