@@ -20,9 +20,9 @@ Please see the [project documentation](https://socketry.github.io/completion/) f
 
 Please see the [project releases](https://socketry.github.io/completion/releases/index) for all releases.
 
-### Unreleased
+### v0.0.1
 
-Initial release.
+  - Initial release.
 
 ## See Also
 
