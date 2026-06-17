@@ -2,4 +2,4 @@
 
 ## v0.0.1
 
-  - Initial release.
+  - Fix generic Fish completion installation by loading the adapter at shell startup and resolving completion executables from `PATH`.

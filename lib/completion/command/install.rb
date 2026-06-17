@@ -29,6 +29,11 @@ module Completion
 			def call
 				shell = @options[:shell]
 				directory = @options[:directory] || Shell.default_directory(shell)
+				
+				if shell == "fish" && !@options[:command] && !@options[:directory]
+					directory = Shell.default_configuration_directory
+				end
+				
 				path = File.join(directory, Shell.file_name(shell, @options[:command]))
 				script = Shell.script(shell: shell, executable: @options[:command])
 				

@@ -45,6 +45,13 @@ module Completion
 			File.expand_path("~/.config/fish/functions")
 		end
 		
+		# Get the default Fish configuration directory.
+		# 
+		# @returns [String] The default Fish configuration directory.
+		def self.default_configuration_directory
+			File.expand_path("~/.config/fish/conf.d")
+		end
+		
 		# Get the installed adapter file name for a shell.
 		# 
 		# @parameter shell [String] The shell name.

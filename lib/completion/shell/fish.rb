@@ -139,7 +139,12 @@ module Completion
 				<<~SCRIPT
 					function __completion_supported --description 'Check completion support'
 						set -l completer (__completion_resolve)
-						test -x "$completer"
+						
+						if string match -q "*/*" "$completer"
+							test -x "$completer"
+						else
+							type -q "$completer"
+						end
 					end
 				SCRIPT
 			end

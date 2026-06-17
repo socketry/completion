@@ -113,6 +113,29 @@ describe Completion::Command::Top do
 	
 	it "installs a generic shell completion adapter when command is omitted" do
 		output = StringIO.new
+		home = ENV["HOME"]
+		
+		begin
+			ENV["HOME"] = File.join(root, "home")
+			
+			command = subject.new(["install", "--shell", "fish"], output: output)
+			command.call
+		ensure
+			ENV["HOME"] = home
+		end
+		
+		directory = File.join(root, "home", ".config", "fish")
+		function_directory = File.join(directory, "functions")
+		configuration_directory = File.join(directory, "conf.d")
+		function_paths = Completion::Shell::Fish.shared_functions.keys.collect{|file_name| File.join(function_directory, file_name)}
+		path = File.join(configuration_directory, "completion.fish")
+		expect(output.string).to be == "#{function_paths.join("\n")}\n#{path}\n"
+		expect(File.read(File.join(function_directory, "__completion_register_default.fish"))).to be(:include?, 'complete -c "*"')
+		expect(File.read(path)).to be(:include?, "__completion_register_default")
+	end
+	
+	it "installs a generic fish completion adapter to an explicit directory" do
+		output = StringIO.new
 		directory = File.join(root, "fish")
 		home = ENV["HOME"]
 		
@@ -129,7 +152,6 @@ describe Completion::Command::Top do
 		function_paths = Completion::Shell::Fish.shared_functions.keys.collect{|file_name| File.join(function_directory, file_name)}
 		path = File.join(directory, "completion.fish")
 		expect(output.string).to be == "#{function_paths.join("\n")}\n#{path}\n"
-		expect(File.read(File.join(function_directory, "__completion_register_default.fish"))).to be(:include?, 'complete -c "*"')
 		expect(File.read(path)).to be(:include?, "__completion_register_default")
 	end
 	

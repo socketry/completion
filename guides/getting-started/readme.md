@@ -109,6 +109,12 @@ Fish command adapters are installed into:
 ~/.config/fish/completions
 ~~~
 
+Fish generic adapters are installed into:
+
+~~~ text
+~/.config/fish/conf.d
+~~~
+
 ## Generating an Adapter
 
 You can generate an adapter script without installing it:

@@ -638,6 +638,33 @@ describe Completion::Shell do
 		expect(output).to be(:include?, "completion\tGenerate")
 	end
 	
+	it "uses generic fish completion for commands with completers in PATH" do
+		skip "fish is not available" unless system("command -v fish >/dev/null")
+		
+		path = File.join(root, "fish-generic-path-trace")
+		adapter = write_adapter("generic-path.fish", executable: nil)
+		directory = File.join(root, "generic-path-bin")
+		completer = File.join(directory, "completion-samovar")
+		
+		Dir.mkdir(directory)
+		File.write(completer, <<~SCRIPT)
+			#!/bin/sh
+			printf "%s\\n" "$*" >> "$TRACE"
+			printf "command\\tinstall\\tInstall\\n"
+		SCRIPT
+		File.chmod(0o755, completer)
+		
+		output = IO.popen({"TRACE" => path}, ["fish", "--no-config", "-c", <<~SCRIPT], &:read)
+			set fish_function_path #{root} $fish_function_path
+			source #{adapter}
+			set PATH #{directory} $PATH
+			complete --do-complete "samovar ins"
+		SCRIPT
+		
+		expect(File.readlines(path)).to be(:include?, "ins\n")
+		expect(output).to be(:include?, "install\tInstall")
+	end
+	
 	it "keeps fish file completion for commands without adjacent completers" do
 		skip "fish is not available" unless system("command -v fish >/dev/null")
 		
