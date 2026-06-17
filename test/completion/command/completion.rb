@@ -21,6 +21,7 @@ describe Completion::Command::Top do
 		
 		expect(output.string).to be(:include?, "install")
 		expect(output.string).to be(:include?, "generate")
+		expect(output.string).to be(:include?, "uninstall")
 	end
 	
 	it "generates a shell completion adapter script" do
@@ -155,6 +156,44 @@ describe Completion::Command::Top do
 		expect(File.read(path)).to be(:include?, "__completion_register_default")
 	end
 	
+	it "uninstalls a shell completion adapter script from an explicit directory" do
+		output = StringIO.new
+		directory = File.join(root, "zsh")
+		path = File.join(directory, "_my-command")
+		
+		FileUtils.mkdir_p(directory)
+		File.write(path, "adapter")
+		
+		command = subject.new(["uninstall", "--shell", "zsh", "--directory", directory, "--command", "my-command"], output: output)
+		command.call
+		
+		expect(output.string).to be == "#{path}\n"
+		expect(File.exist?(path)).to be == false
+	end
+	
+	it "uninstalls a generic fish completion adapter when command is omitted" do
+		output = StringIO.new
+		home = ENV["HOME"]
+		
+		begin
+			ENV["HOME"] = File.join(root, "home")
+			
+			directory = File.join(ENV["HOME"], ".config", "fish", "conf.d")
+			path = File.join(directory, "completion.fish")
+			
+			FileUtils.mkdir_p(directory)
+			File.write(path, "adapter")
+			
+			command = subject.new(["uninstall", "--shell", "fish"], output: output)
+			command.call
+		ensure
+			ENV["HOME"] = home
+		end
+		
+		expect(output.string).to be == "#{path}\n"
+		expect(File.exist?(path)).to be == false
+	end
+	
 	it "can be invoked through the top-level command" do
 		output = StringIO.new
 		
@@ -182,6 +221,7 @@ describe Completion::Command::Top do
 		
 		expect(output).to be(:include?, "command\tinstall\tInstall a shell completion adapter script.\n")
 		expect(output).to be(:include?, "command\tgenerate\tGenerate shell completion adapter scripts.\n")
+		expect(output).to be(:include?, "command\tuninstall\tUninstall a shell completion adapter script.\n")
 	end
 	
 	it "completes shell names" do

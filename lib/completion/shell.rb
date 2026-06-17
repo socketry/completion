@@ -52,6 +52,22 @@ module Completion
 			File.expand_path("~/.config/fish/conf.d")
 		end
 		
+		# Get the adapter directory for a shell and executable.
+		# 
+		# @parameter shell [String] The shell name.
+		# @parameter executable [String | Nil] The command executable, or nil for the generic adapter.
+		# @parameter directory [String | Nil] The explicit adapter directory.
+		# @returns [String] The adapter directory.
+		def self.adapter_directory(shell, executable = nil, directory: nil)
+			return directory if directory
+			
+			if shell == "fish" && !executable
+				return default_configuration_directory
+			end
+			
+			return default_directory(shell)
+		end
+		
 		# Get the installed adapter file name for a shell.
 		# 
 		# @parameter shell [String] The shell name.

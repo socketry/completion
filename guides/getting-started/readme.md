@@ -82,6 +82,26 @@ You can specify the shell and adapter directory explicitly:
 $ completion install --shell zsh --directory ~/.zsh/completions --command falcon
 ~~~
 
+## Uninstalling an Adapter
+
+Uninstall the generic adapter for the current shell:
+
+~~~ bash
+$ completion uninstall
+~~~
+
+Uninstall an adapter for a specific command:
+
+~~~ bash
+$ completion uninstall --command falcon
+~~~
+
+You can specify the shell and adapter directory explicitly:
+
+~~~ bash
+$ completion uninstall --shell zsh --directory ~/.zsh/completions --command falcon
+~~~
+
 ## Installed Files
 
 Installation writes a small adapter script and shared shell helpers.

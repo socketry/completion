@@ -11,6 +11,7 @@ end
 
 require_relative "generate"
 require_relative "install"
+require_relative "uninstall"
 
 module Completion
 	module Command
@@ -25,6 +26,7 @@ module Completion
 			nested :command, {
 				"install" => Install,
 				"generate" => Generate,
+				"uninstall" => Uninstall,
 			}, default: "generate"
 			
 			# Execute the selected completion sub-command.
